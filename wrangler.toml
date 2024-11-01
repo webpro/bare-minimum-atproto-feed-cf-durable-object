@@ -1,0 +1,20 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "bare-minimum-atproto-feed-cf-durable-object"
+main = "src/index.ts"
+compatibility_date = "2024-10-22"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[[durable_objects.bindings]]
+name = "ATPROTO_FEED"
+class_name = "ATPROTO_FEED"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ATPROTO_FEED"]
+
+[vars]
+FEEDGEN_PUBLISHER_DID="did:plc:rhnatlu4lrctsyyjuk4agyf4"
+FEEDGEN_RECORD_NAME="webpro-nl-js-ts"

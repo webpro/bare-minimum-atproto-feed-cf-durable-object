@@ -1,0 +1,23 @@
+{
+	"name": "bare-minimum-atproto-feed-cf-durable-object",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev"
+	},
+	"devDependencies": {
+		"@atproto/api": "^0.13.14",
+		"@cloudflare/workers-types": "^4.20241022.0",
+		"typescript": "^5.5.2",
+		"wrangler": "^3.60.3"
+	},
+	"dependencies": {
+		"@atproto/lexicon": "^0.4.2",
+		"@atproto/repo": "^0.5.3",
+		"@atproto/sync": "^0.1.4",
+		"@atproto/xrpc-server": "^0.7.1",
+		"cbor-x": "^1.6.0"
+	}
+}
