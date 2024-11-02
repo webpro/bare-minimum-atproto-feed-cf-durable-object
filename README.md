@@ -32,6 +32,8 @@ pnpm run publish
 node --env-file .env --experimental-strip-types scripts/publishFeedGen.ts
 ```
 
+Run this command again to update the feed.
+
 ## Unpublish
 
 ```sh

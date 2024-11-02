@@ -2,6 +2,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { decodeMultiple } from 'cbor-x';
 import { cborToLexRecord, readCar } from '@atproto/repo';
 import { isRecord, type Record } from './lexicon/types/app/bsky/feed/post';
+import { BLOCKLIST, KEYWORDS, LANG } from './keywords';
 
 const FIREHOSE_URL = 'wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos';
 const WELL_KNOWN_PATHNAME = '/.well-known/did.json';
@@ -10,30 +11,13 @@ const FEED_LIMIT = 300;
 const PAGE_LIMIT = 30;
 const headers = { 'Content-Type': 'application/json' };
 
-const LANG = 'en';
-const KEYWORDS = [
-	'bun.sh',
-	'css',
-	'deno',
-	'ecmascript',
-	'frontend',
-	'javascript',
-	'markdown',
-	'node.js',
-	'npm',
-	'typescript',
-	'web dev',
-	'web development',
-];
-const EXCLUDE = ['adult', 'nsfw', 'xxx'];
-
 const keywordMatch = new RegExp(`\\b(${KEYWORDS.join('|')})s?\\b`);
-const excludeMatch = new RegExp(`\\b(${EXCLUDE.join('|')})s?\\b`);
+const blockMatch = new RegExp(`\\b(${BLOCKLIST.join('|')})\\b`);
 
 const hasLang = (record: Record) => !record.langs || record.langs.length === 0 || record.langs.includes(LANG);
 const hasKeyword = (record: Record) => keywordMatch.test(record.text.toLowerCase());
-const hasExclude = (record: Record) => excludeMatch.test(record.text.toLowerCase());
-const isMatch = (record: Record) => hasLang(record) && hasKeyword(record) && !hasExclude(record);
+const hasBlock = (record: Record) => blockMatch.test(record.text.toLowerCase());
+const isMatch = (record: Record) => hasLang(record) && hasKeyword(record) && !hasBlock(record);
 
 export class ATPROTO_FEED extends DurableObject {
 	private websocket: WebSocket | null = null;

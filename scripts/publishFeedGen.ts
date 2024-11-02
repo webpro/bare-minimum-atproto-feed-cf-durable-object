@@ -22,10 +22,11 @@ const service = 'https://bsky.social';
 const recordName = 'webpro-nl-js-ts';
 
 // Optionally, enter a display name for your feed (must not be longer than 24 graphemes)
-const displayName = 'JavaScript & TypeScript';
+const displayName = 'JS/TS';
 
 // Optionally, enter a brief description of your feed
-const description = 'Filter for keywords like javascript, typescript, node.js, deno';
+const description =
+	'Filter for keywords like javascript and typescript (list: https://github.com/webpro/bare-minimum-atproto-feed-cf-durable-object/blob/main/src/keywords.ts)';
 
 // Optionally, enter a local path to an avatar that will be used for the feed
 const avatar = './ts.png';
