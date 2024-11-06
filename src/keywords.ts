@@ -12,6 +12,8 @@ export const KEYWORDS = [
 	'markdown',
 	'node.js',
 	'npm',
+	'package.json',
+	'tsconfig',
 	'typescript',
 	'web dev',
 	'web development',

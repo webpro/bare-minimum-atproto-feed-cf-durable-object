@@ -26,7 +26,7 @@ const displayName = 'JS/TS';
 
 // Optionally, enter a brief description of your feed
 const description =
-	'Filter for keywords like javascript and typescript (list: https://github.com/webpro/bare-minimum-atproto-feed-cf-durable-object/blob/main/src/keywords.ts)';
+	'Filter for keywords like javascript and typescript\n\nKeywords: https://github.com/webpro/bare-minimum-atproto-feed-cf-durable-object/blob/main/src/keywords.ts';
 
 // Optionally, enter a local path to an avatar that will be used for the feed
 const avatar = './ts.png';
