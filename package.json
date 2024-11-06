@@ -16,7 +16,6 @@
 	"dependencies": {
 		"@atproto/lexicon": "^0.4.2",
 		"@atproto/repo": "^0.5.3",
-		"@atproto/sync": "^0.1.4",
 		"@atproto/xrpc-server": "^0.7.1",
 		"cbor-x": "^1.6.0"
 	}
