@@ -1,10 +1,9 @@
 import { DurableObject } from 'cloudflare:workers';
-import { decodeMultiple } from 'cbor-x';
-import { cborToLexRecord, readCar } from '@atproto/repo';
 import { isRecord, type Record } from './lexicon/types/app/bsky/feed/post';
 import { BLOCKLIST, KEYWORDS, LANG } from './keywords';
+import { Jetstream } from '@skyware/jetstream';
 
-const FIREHOSE_URL = 'wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos';
+// const FIREHOSE_URL = 'wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos';
 const WELL_KNOWN_PATHNAME = '/.well-known/did.json';
 const SKELETON_PATHNAME = '/xrpc/app.bsky.feed.getFeedSkeleton';
 const FEED_LIMIT = 300;
@@ -20,7 +19,6 @@ const hasBlock = (record: Record) => blockMatch.test(record.text.toLowerCase());
 const isMatch = (record: Record) => hasLang(record) && hasKeyword(record) && !hasBlock(record);
 
 export class ATPROTO_FEED extends DurableObject {
-	private websocket: WebSocket | null = null;
 	private sql: SqlStorage;
 
 	constructor(ctx: DurableObjectState, env: Env) {
@@ -39,47 +37,35 @@ export class ATPROTO_FEED extends DurableObject {
 	}
 
 	private async connect() {
-		this.websocket = new WebSocket(FIREHOSE_URL);
+		const jetstream = new Jetstream();
 
-		this.websocket.addEventListener('message', async (event) => {
-			const buffer = event.data as ArrayBuffer;
-			const decoded = decodeMultiple(new Uint8Array(buffer));
-			const body = decoded[1];
-			if (body?.blocks) {
-				const car = await readCar(body.blocks);
-				for (const op of body.ops) {
-					if (op.action === 'create') {
-						if (!op.cid) continue;
-						const recordBytes = car.blocks.get(op.cid);
-						if (!recordBytes) continue;
-						const record = cborToLexRecord(recordBytes);
-						if (isRecord(record) && isMatch(record)) {
-							const uri = `at://${body.repo}/${op.path}`;
-							const cid = op.cid.toString();
-							const indexedAt = new Date().toISOString();
-							const query = `INSERT OR REPLACE INTO posts (uri, cid, indexedAt) VALUES ("${uri}", "${cid}", "${indexedAt}")`;
-							this.sql.exec(query);
-							const count = await this.sql.exec('SELECT COUNT(*) as count FROM posts').rowsRead;
-							if (count > FEED_LIMIT) {
-								const toDelete = count - FEED_LIMIT;
-								this.sql.exec(
-									`DELETE FROM posts WHERE uri IN (SELECT uri FROM posts ORDER BY indexedAt ASC LIMIT ${toDelete})`,
-								);
-							}
-						}
-					}
+		jetstream.onCreate('app.bsky.feed.post', (event) => {
+			if (isRecord(event.commit.record) && isMatch(event.commit.record)) {
+				const uri = `at://${event.did}/${event.commit.collection}/${event.commit.rkey}`;
+				const cid = event.commit.cid;
+				const indexedAt = new Date().toISOString();
+				const query = `INSERT OR REPLACE INTO posts (uri, cid, indexedAt) VALUES ("${uri}", "${cid}", "${indexedAt}")`;
+				this.sql.exec(query);
+				const count = this.sql.exec('SELECT COUNT(*) as count FROM posts').rowsRead;
+				if (count > FEED_LIMIT) {
+					const toDelete = count - FEED_LIMIT;
+					this.sql.exec(
+						`DELETE FROM posts WHERE uri IN (SELECT uri FROM posts ORDER BY indexedAt ASC LIMIT ${toDelete})`,
+					);
 				}
 			}
 		});
 
-		this.websocket.addEventListener('close', (event) => {
+		jetstream.on('close', (event) => {
 			console.log('ws closed', event);
 			setTimeout(() => this.connect(), 5000);
 		});
 
-		this.websocket.addEventListener('error', (event) => {
+		jetstream.on('error', (event) => {
 			console.log('ws error', event);
 		});
+
+		jetstream.start();
 	}
 
 	async getPosts({ limit = PAGE_LIMIT }: { limit?: number }) {
