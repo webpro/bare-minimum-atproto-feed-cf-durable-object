@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
-import { isRecord, type Record } from './lexicon/types/app/bsky/feed/post';
-import { BLOCKLIST, KEYWORDS, LANG } from './keywords';
+import { isRecord, type Record } from './lexicon/types/app/bsky/feed/post.js';
+import { BLOCKLIST, KEYWORDS, LANG } from './keywords.js';
 import { Jetstream } from '@skyware/jetstream';
 
 // const FIREHOSE_URL = 'wss://bsky.network/xrpc/com.atproto.sync.subscribeRepos';
